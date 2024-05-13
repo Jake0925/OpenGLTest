@@ -4,8 +4,26 @@
 
 // 윈도우 창크기의 변화가 있는경우 콜백
 void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
-    SPDLOG_INFO("framebuffer size changed: ({} x {})", width, height);
+    SPDLOG_INFO("framebuffer size changed: ({} x {})", width, height); // 윈도우크기가 변하는 경우 사이즈 메세지 출력
     glViewport(0, 0, width, height);
+}
+
+
+// 키보드 콜랙
+void OnKeyEvent(GLFWwindow* window,
+    int key, int scancode, int action, int mods) {
+    SPDLOG_INFO("key: {}, scancode: {}, action: {}, mods: {}{}{}",
+        key, scancode,
+        action == GLFW_PRESS ? "Pressed" :
+        action == GLFW_RELEASE ? "Released" :
+        action == GLFW_REPEAT ? "Repeat" : "Unknown",
+        mods & GLFW_MOD_CONTROL ? "C" : "-",
+        mods & GLFW_MOD_SHIFT ? "S" : "-",
+        mods & GLFW_MOD_ALT ? "A" : "-");
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)  // ESC키를 누르는경우 종료
+    {
+        glfwSetWindowShouldClose(window, true);
+    }
 }
 
 int main(int argc, const char** argv) {
@@ -55,13 +73,21 @@ int main(int argc, const char** argv) {
     auto glVersion = glGetString(GL_VERSION);
     // SPDLOG_INFO("OpenGL context version: {}", glVersion);
 
-    glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange); // 창크기 변화시 콜백
+
+    OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange); // 윈도우 콜백
+    glfwSetKeyCallback(window, OnKeyEvent); // 키보드 콜백
 
 
     // glfw 루프 실행, 윈도우 close 버튼을 누르면 정상 종료
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // 1/60초 간격으로 이벤트를 실행 및 감지, 이것이 없이는경우 루프가 너무빨리돌아 멈춘화면처럼 보인다
+
+        // render
+        glClearColor(0.1f, 0.2f, 0.3f, 0.0f); // 입력색
+        glClear(GL_COLOR_BUFFER_BIT);
+        glfwSwapBuffers(window);
     }
 
     glfwTerminate();
