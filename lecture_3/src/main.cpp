@@ -1,5 +1,12 @@
 #include <spdlog/spdlog.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+// 윈도우 창크기의 변화가 있는경우 콜백
+void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
+    SPDLOG_INFO("framebuffer size changed: ({} x {})", width, height);
+    glViewport(0, 0, width, height);
+}
 
 int main(int argc, const char** argv) {
     // 시작을 알리는 로그
@@ -17,6 +24,10 @@ int main(int argc, const char** argv) {
     }
 
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 
     // glfw 윈도우 생성, 실패하면 에러 출력후 종료
     SPDLOG_INFO("Create glfw window");
@@ -30,10 +41,27 @@ int main(int argc, const char** argv) {
     }
 
 
+    glfwMakeContextCurrent(window);
+
+    // glad를 활용한 OpenGL 함수 로딩
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) // glfwGetProcAddress- 프로세스주소를 얻어온다, gladLoadGLLoader - opengl함수를 얻어온
+    {
+        SPDLOG_ERROR("failed to initialize glad");
+        glfwTerminate();
+        return -1;
+    }
+
+    // // 여기서부터 Opengl 함수를 호출하여 사용할수 있다
+    auto glVersion = glGetString(GL_VERSION);
+    // SPDLOG_INFO("OpenGL context version: {}", glVersion);
+
+    glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange); // 창크기 변화시 콜백
+
+
     // glfw 루프 실행, 윈도우 close 버튼을 누르면 정상 종료
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents(); // 1/60초 간격으로 이벤트를 실행, 이것이 없이는경우 루프가 너무빨리돌아 멈춘화면처럼 보인다
+        glfwPollEvents(); // 1/60초 간격으로 이벤트를 실행 및 감지, 이것이 없이는경우 루프가 너무빨리돌아 멈춘화면처럼 보인다
     }
 
     glfwTerminate();
