@@ -8,7 +8,15 @@ set(WINDOW_WIDTH 960)
 set(WINDOW_HEIGHT 540)
 
 project(${PROJECT_NAME})
-add_executable(${PROJECT_NAME} src/main.cpp)
+
+# 컴파일할 파일들
+add_executable(${PROJECT_NAME} 
+src/main.cpp
+src/common.cpp src/common.h
+src/shader.cpp src/shader.h
+src/program.cpp src/program.h
+src/context.cpp src/context.h
+)
 
  
 include(Dependency.cmake) # Dependency.cmake 파일 호출

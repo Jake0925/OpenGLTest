@@ -1,11 +1,13 @@
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "context.h"
+
 
 // 윈도우 창크기의 변화가 있는경우 콜백
 void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
     SPDLOG_INFO("framebuffer size changed: ({} x {})", width, height); // 윈도우크기가 변하는 경우 사이즈 메세지 출력
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height); // 그림을그릴 위치 및 홤ㄴ설정
 }
 
 
@@ -47,7 +49,8 @@ int main(int argc, const char** argv) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-    // glfw 윈도우 생성, 실패하면 에러 출력후 종료
+    // glfw 윈도우 생성
+    // 실패하면 에러 출력후 종료
     SPDLOG_INFO("Create glfw window");
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, // CmakeLixt에 선언되어있다 
       nullptr, nullptr);
@@ -58,7 +61,7 @@ int main(int argc, const char** argv) {
         return -1;
     }
 
-
+    // 텍스트 설정
     glfwMakeContextCurrent(window);
 
     // glad를 활용한 OpenGL 함수 로딩
@@ -69,9 +72,18 @@ int main(int argc, const char** argv) {
         return -1;
     }
 
-    // // 여기서부터 Opengl 함수를 호출하여 사용할수 있다
-    auto glVersion = glGetString(GL_VERSION);
+    // // 여기서부터 Opengl 함수를 호출하여 사용할수 있다 ****************************
+    auto glVersion = glGetString(GL_VERSION); // 버젼확인
     // SPDLOG_INFO("OpenGL context version: {}", glVersion);
+
+
+    // context 초기화
+    auto context = Context::Create();
+    if (!context) {
+    SPDLOG_ERROR("failed to create context");
+    glfwTerminate();
+    return -1;
+    }
 
 
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -81,14 +93,13 @@ int main(int argc, const char** argv) {
 
     // glfw 루프 실행, 윈도우 close 버튼을 누르면 정상 종료
     SPDLOG_INFO("Start main loop");
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents(); // 1/60초 간격으로 이벤트를 실행 및 감지, 이것이 없이는경우 루프가 너무빨리돌아 멈춘화면처럼 보인다
-
+    while (!glfwWindowShouldClose(window)) {    
         // render
-        glClearColor(0.1f, 0.2f, 0.3f, 0.0f); // 입력색
-        glClear(GL_COLOR_BUFFER_BIT);
-        glfwSwapBuffers(window);
+        context->Render();
+        glfwSwapBuffers(window); // 더블버퍼링, 프레임버퍼2개를준비함(front/back)
+        glfwPollEvents(); // 1/60초 간격으로 이벤트를 실행 및 감지, 이것이 없이는경우 루프가 너무빨리돌아 멈춘화면처럼 보인다
     }
+    context.reset(); // context 메모리 해제 (또는 context = nullPtr를 사용해도 된다)
 
     glfwTerminate();
     return 0;
