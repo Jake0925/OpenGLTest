@@ -27,8 +27,9 @@ bool Context::Init() {
     };
 
     // VAO
-    glGenVertexArrays(1, &m_vertexArrayObject); // array object를 1개 생성
-    glBindVertexArray(m_vertexArrayObject); // 바인딩
+    m_vertexLayout = VertexLayout::Create();
+    // glGenVertexArrays(1, &m_vertexArrayObject); // array object를 1개 생성
+    // glBindVertexArray(m_vertexArrayObject); // 바인딩
     
 
 
@@ -43,11 +44,12 @@ bool Context::Init() {
     //                                                                             // m_vertextBuffer에 vertices의 정보를 넘겨준다
 
     // VAO
-    glEnableVertexAttribArray(0); // 정점 attribute중 0번의 attribute를 사용할것이다, 이 0은 simple.vs 에서 loacation =0을 의미한다
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);  // vertice가 어떻게 구성되어 잇는지 설명한다
-                                                                            // 0번 attribute는 float형태의 값이 3개인 nomalize(0~1사이의값)할필요없고(GL_FALSE), 
-                                                                            //stride 즉 다음좌표의값을 확인하기위해서는 sizeof(float)*3만큼의 메모리위치를 건너띄면되고
-                                                                            //옵셋은 0이다
+    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+    // glEnableVertexAttribArray(0); // 정점 attribute중 0번의 attribute를 사용할것이다, 이 0은 simple.vs 에서 loacation =0을 의미한다
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);  // vertice가 어떻게 구성되어 잇는지 설명한다
+    //                                                                         // 0번 attribute는 float형태의 값이 3개인 nomalize(0~1사이의값)할필요없고(GL_FALSE), 
+    //                                                                         //stride 즉 다음좌표의값을 확인하기위해서는 sizeof(float)*3만큼의 메모리위치를 건너띄면되고
+    //                                                                         //옵셋은 0이다
 
     // index번호 호출을 위함
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(float)*6);
